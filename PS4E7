@@ -1,0 +1,3133 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "ae1c48ea",
+   "metadata": {
+    "_cell_guid": "b1076dfc-b9ad-4769-8c92-a6c4dae69d19",
+    "_uuid": "8f2839f25d086af736a60e9eeb907d3b93b6e0e5",
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:06:59.798030Z",
+     "iopub.status.busy": "2024-07-12T09:06:59.797662Z",
+     "iopub.status.idle": "2024-07-12T09:07:03.086781Z",
+     "shell.execute_reply": "2024-07-12T09:07:03.085876Z"
+    },
+    "papermill": {
+     "duration": 3.304507,
+     "end_time": "2024-07-12T09:07:03.089359",
+     "exception": false,
+     "start_time": "2024-07-12T09:06:59.784852",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "import seaborn as sns\n",
+    "from tqdm import tqdm\n",
+    "import progressbar\n",
+    "import math\n",
+    "import warnings\n",
+    "import itertools\n",
+    "import plotly.express as px\n",
+    "\n",
+    "from sklearn.model_selection import train_test_split,GridSearchCV\n",
+    "\n",
+    "from sklearn.tree import DecisionTreeClassifier\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "from sklearn.ensemble import RandomForestClassifier, VotingClassifier, AdaBoostClassifier, GradientBoostingClassifier\n",
+    "from sklearn.metrics import classification_report,accuracy_score\n",
+    "warnings.filterwarnings('ignore')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4fd9d258",
+   "metadata": {
+    "papermill": {
+     "duration": 0.010668,
+     "end_time": "2024-07-12T09:07:03.111496",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:03.100828",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Getting started"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "ef9c2164",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:03.135577Z",
+     "iopub.status.busy": "2024-07-12T09:07:03.135004Z",
+     "iopub.status.idle": "2024-07-12T09:07:22.656202Z",
+     "shell.execute_reply": "2024-07-12T09:07:22.654980Z"
+    },
+    "papermill": {
+     "duration": 19.536194,
+     "end_time": "2024-07-12T09:07:22.658914",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:03.122720",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df = pd.read_csv('/kaggle/input/playground-series-s4e7/train.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "d04b7d13",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:22.682383Z",
+     "iopub.status.busy": "2024-07-12T09:07:22.681998Z",
+     "iopub.status.idle": "2024-07-12T09:07:22.714243Z",
+     "shell.execute_reply": "2024-07-12T09:07:22.713220Z"
+    },
+    "papermill": {
+     "duration": 0.046452,
+     "end_time": "2024-07-12T09:07:22.716471",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:22.670019",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>Gender</th>\n",
+       "      <th>Age</th>\n",
+       "      <th>Driving_License</th>\n",
+       "      <th>Region_Code</th>\n",
+       "      <th>Previously_Insured</th>\n",
+       "      <th>Vehicle_Age</th>\n",
+       "      <th>Vehicle_Damage</th>\n",
+       "      <th>Annual_Premium</th>\n",
+       "      <th>Policy_Sales_Channel</th>\n",
+       "      <th>Vintage</th>\n",
+       "      <th>Response</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>21</td>\n",
+       "      <td>1</td>\n",
+       "      <td>35.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>65101.0</td>\n",
+       "      <td>124.0</td>\n",
+       "      <td>187</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>43</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>&gt; 2 Years</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>58911.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>288</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>25</td>\n",
+       "      <td>1</td>\n",
+       "      <td>14.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>38043.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>254</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>35</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>2630.0</td>\n",
+       "      <td>156.0</td>\n",
+       "      <td>76</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>36</td>\n",
+       "      <td>1</td>\n",
+       "      <td>15.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>31951.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>294</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504793</th>\n",
+       "      <td>11504793</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>48</td>\n",
+       "      <td>1</td>\n",
+       "      <td>6.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>27412.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>218</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504794</th>\n",
+       "      <td>11504794</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>26</td>\n",
+       "      <td>1</td>\n",
+       "      <td>36.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>29509.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>115</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504795</th>\n",
+       "      <td>11504795</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>29</td>\n",
+       "      <td>1</td>\n",
+       "      <td>32.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>2630.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>189</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504796</th>\n",
+       "      <td>11504796</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>51</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>48443.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>274</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504797</th>\n",
+       "      <td>11504797</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>25</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>32855.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>189</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>11504798 rows × 12 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                id  Gender  Age  Driving_License  Region_Code  \\\n",
+       "0                0    Male   21                1         35.0   \n",
+       "1                1    Male   43                1         28.0   \n",
+       "2                2  Female   25                1         14.0   \n",
+       "3                3  Female   35                1          1.0   \n",
+       "4                4  Female   36                1         15.0   \n",
+       "...            ...     ...  ...              ...          ...   \n",
+       "11504793  11504793    Male   48                1          6.0   \n",
+       "11504794  11504794  Female   26                1         36.0   \n",
+       "11504795  11504795  Female   29                1         32.0   \n",
+       "11504796  11504796  Female   51                1         28.0   \n",
+       "11504797  11504797    Male   25                1         28.0   \n",
+       "\n",
+       "          Previously_Insured Vehicle_Age Vehicle_Damage  Annual_Premium  \\\n",
+       "0                          0    1-2 Year            Yes         65101.0   \n",
+       "1                          0   > 2 Years            Yes         58911.0   \n",
+       "2                          1    < 1 Year             No         38043.0   \n",
+       "3                          0    1-2 Year            Yes          2630.0   \n",
+       "4                          1    1-2 Year             No         31951.0   \n",
+       "...                      ...         ...            ...             ...   \n",
+       "11504793                   0    1-2 Year            Yes         27412.0   \n",
+       "11504794                   0    < 1 Year            Yes         29509.0   \n",
+       "11504795                   1    < 1 Year             No          2630.0   \n",
+       "11504796                   0    1-2 Year            Yes         48443.0   \n",
+       "11504797                   1    < 1 Year             No         32855.0   \n",
+       "\n",
+       "          Policy_Sales_Channel  Vintage  Response  \n",
+       "0                        124.0      187         0  \n",
+       "1                         26.0      288         1  \n",
+       "2                        152.0      254         0  \n",
+       "3                        156.0       76         0  \n",
+       "4                        152.0      294         0  \n",
+       "...                        ...      ...       ...  \n",
+       "11504793                  26.0      218         0  \n",
+       "11504794                 152.0      115         1  \n",
+       "11504795                 152.0      189         0  \n",
+       "11504796                  26.0      274         1  \n",
+       "11504797                 152.0      189         0  \n",
+       "\n",
+       "[11504798 rows x 12 columns]"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "e3c89d32",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:22.741255Z",
+     "iopub.status.busy": "2024-07-12T09:07:22.740822Z",
+     "iopub.status.idle": "2024-07-12T09:07:22.762366Z",
+     "shell.execute_reply": "2024-07-12T09:07:22.761147Z"
+    },
+    "papermill": {
+     "duration": 0.036454,
+     "end_time": "2024-07-12T09:07:22.764919",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:22.728465",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 11504798 entries, 0 to 11504797\n",
+      "Data columns (total 12 columns):\n",
+      " #   Column                Dtype  \n",
+      "---  ------                -----  \n",
+      " 0   id                    int64  \n",
+      " 1   Gender                object \n",
+      " 2   Age                   int64  \n",
+      " 3   Driving_License       int64  \n",
+      " 4   Region_Code           float64\n",
+      " 5   Previously_Insured    int64  \n",
+      " 6   Vehicle_Age           object \n",
+      " 7   Vehicle_Damage        object \n",
+      " 8   Annual_Premium        float64\n",
+      " 9   Policy_Sales_Channel  float64\n",
+      " 10  Vintage               int64  \n",
+      " 11  Response              int64  \n",
+      "dtypes: float64(3), int64(6), object(3)\n",
+      "memory usage: 1.0+ GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "df.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "56920de8",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:22.790965Z",
+     "iopub.status.busy": "2024-07-12T09:07:22.790542Z",
+     "iopub.status.idle": "2024-07-12T09:07:26.528984Z",
+     "shell.execute_reply": "2024-07-12T09:07:26.527972Z"
+    },
+    "papermill": {
+     "duration": 3.753558,
+     "end_time": "2024-07-12T09:07:26.531470",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:22.777912",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>Age</th>\n",
+       "      <th>Driving_License</th>\n",
+       "      <th>Region_Code</th>\n",
+       "      <th>Previously_Insured</th>\n",
+       "      <th>Annual_Premium</th>\n",
+       "      <th>Policy_Sales_Channel</th>\n",
+       "      <th>Vintage</th>\n",
+       "      <th>Response</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>count</th>\n",
+       "      <td>1.150480e+07</td>\n",
+       "      <td>1.150480e+07</td>\n",
+       "      <td>1.150480e+07</td>\n",
+       "      <td>1.150480e+07</td>\n",
+       "      <td>1.150480e+07</td>\n",
+       "      <td>1.150480e+07</td>\n",
+       "      <td>1.150480e+07</td>\n",
+       "      <td>1.150480e+07</td>\n",
+       "      <td>1.150480e+07</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>mean</th>\n",
+       "      <td>5.752398e+06</td>\n",
+       "      <td>3.838356e+01</td>\n",
+       "      <td>9.980220e-01</td>\n",
+       "      <td>2.641869e+01</td>\n",
+       "      <td>4.629966e-01</td>\n",
+       "      <td>3.046137e+04</td>\n",
+       "      <td>1.124254e+02</td>\n",
+       "      <td>1.638977e+02</td>\n",
+       "      <td>1.229973e-01</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>std</th>\n",
+       "      <td>3.321149e+06</td>\n",
+       "      <td>1.499346e+01</td>\n",
+       "      <td>4.443120e-02</td>\n",
+       "      <td>1.299159e+01</td>\n",
+       "      <td>4.986289e-01</td>\n",
+       "      <td>1.645475e+04</td>\n",
+       "      <td>5.403571e+01</td>\n",
+       "      <td>7.997953e+01</td>\n",
+       "      <td>3.284341e-01</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>min</th>\n",
+       "      <td>0.000000e+00</td>\n",
+       "      <td>2.000000e+01</td>\n",
+       "      <td>0.000000e+00</td>\n",
+       "      <td>0.000000e+00</td>\n",
+       "      <td>0.000000e+00</td>\n",
+       "      <td>2.630000e+03</td>\n",
+       "      <td>1.000000e+00</td>\n",
+       "      <td>1.000000e+01</td>\n",
+       "      <td>0.000000e+00</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>25%</th>\n",
+       "      <td>2.876199e+06</td>\n",
+       "      <td>2.400000e+01</td>\n",
+       "      <td>1.000000e+00</td>\n",
+       "      <td>1.500000e+01</td>\n",
+       "      <td>0.000000e+00</td>\n",
+       "      <td>2.527700e+04</td>\n",
+       "      <td>2.900000e+01</td>\n",
+       "      <td>9.900000e+01</td>\n",
+       "      <td>0.000000e+00</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>50%</th>\n",
+       "      <td>5.752398e+06</td>\n",
+       "      <td>3.600000e+01</td>\n",
+       "      <td>1.000000e+00</td>\n",
+       "      <td>2.800000e+01</td>\n",
+       "      <td>0.000000e+00</td>\n",
+       "      <td>3.182400e+04</td>\n",
+       "      <td>1.510000e+02</td>\n",
+       "      <td>1.660000e+02</td>\n",
+       "      <td>0.000000e+00</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>75%</th>\n",
+       "      <td>8.628598e+06</td>\n",
+       "      <td>4.900000e+01</td>\n",
+       "      <td>1.000000e+00</td>\n",
+       "      <td>3.500000e+01</td>\n",
+       "      <td>1.000000e+00</td>\n",
+       "      <td>3.945100e+04</td>\n",
+       "      <td>1.520000e+02</td>\n",
+       "      <td>2.320000e+02</td>\n",
+       "      <td>0.000000e+00</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>max</th>\n",
+       "      <td>1.150480e+07</td>\n",
+       "      <td>8.500000e+01</td>\n",
+       "      <td>1.000000e+00</td>\n",
+       "      <td>5.200000e+01</td>\n",
+       "      <td>1.000000e+00</td>\n",
+       "      <td>5.401650e+05</td>\n",
+       "      <td>1.630000e+02</td>\n",
+       "      <td>2.990000e+02</td>\n",
+       "      <td>1.000000e+00</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                 id           Age  Driving_License   Region_Code  \\\n",
+       "count  1.150480e+07  1.150480e+07     1.150480e+07  1.150480e+07   \n",
+       "mean   5.752398e+06  3.838356e+01     9.980220e-01  2.641869e+01   \n",
+       "std    3.321149e+06  1.499346e+01     4.443120e-02  1.299159e+01   \n",
+       "min    0.000000e+00  2.000000e+01     0.000000e+00  0.000000e+00   \n",
+       "25%    2.876199e+06  2.400000e+01     1.000000e+00  1.500000e+01   \n",
+       "50%    5.752398e+06  3.600000e+01     1.000000e+00  2.800000e+01   \n",
+       "75%    8.628598e+06  4.900000e+01     1.000000e+00  3.500000e+01   \n",
+       "max    1.150480e+07  8.500000e+01     1.000000e+00  5.200000e+01   \n",
+       "\n",
+       "       Previously_Insured  Annual_Premium  Policy_Sales_Channel       Vintage  \\\n",
+       "count        1.150480e+07    1.150480e+07          1.150480e+07  1.150480e+07   \n",
+       "mean         4.629966e-01    3.046137e+04          1.124254e+02  1.638977e+02   \n",
+       "std          4.986289e-01    1.645475e+04          5.403571e+01  7.997953e+01   \n",
+       "min          0.000000e+00    2.630000e+03          1.000000e+00  1.000000e+01   \n",
+       "25%          0.000000e+00    2.527700e+04          2.900000e+01  9.900000e+01   \n",
+       "50%          0.000000e+00    3.182400e+04          1.510000e+02  1.660000e+02   \n",
+       "75%          1.000000e+00    3.945100e+04          1.520000e+02  2.320000e+02   \n",
+       "max          1.000000e+00    5.401650e+05          1.630000e+02  2.990000e+02   \n",
+       "\n",
+       "           Response  \n",
+       "count  1.150480e+07  \n",
+       "mean   1.229973e-01  \n",
+       "std    3.284341e-01  \n",
+       "min    0.000000e+00  \n",
+       "25%    0.000000e+00  \n",
+       "50%    0.000000e+00  \n",
+       "75%    0.000000e+00  \n",
+       "max    1.000000e+00  "
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.describe()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "7e1b1946",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:26.557246Z",
+     "iopub.status.busy": "2024-07-12T09:07:26.556201Z",
+     "iopub.status.idle": "2024-07-12T09:07:28.262653Z",
+     "shell.execute_reply": "2024-07-12T09:07:28.261648Z"
+    },
+    "papermill": {
+     "duration": 1.722014,
+     "end_time": "2024-07-12T09:07:28.265246",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:26.543232",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "id                      0\n",
+       "Gender                  0\n",
+       "Age                     0\n",
+       "Driving_License         0\n",
+       "Region_Code             0\n",
+       "Previously_Insured      0\n",
+       "Vehicle_Age             0\n",
+       "Vehicle_Damage          0\n",
+       "Annual_Premium          0\n",
+       "Policy_Sales_Channel    0\n",
+       "Vintage                 0\n",
+       "Response                0\n",
+       "dtype: int64"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.isnull().sum()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "cbccba51",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:28.290866Z",
+     "iopub.status.busy": "2024-07-12T09:07:28.290448Z",
+     "iopub.status.idle": "2024-07-12T09:07:44.900935Z",
+     "shell.execute_reply": "2024-07-12T09:07:44.899722Z"
+    },
+    "papermill": {
+     "duration": 16.625839,
+     "end_time": "2024-07-12T09:07:44.903212",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:28.277373",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(11504798, 12)"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.duplicated().sum()\n",
+    "df.drop_duplicates(inplace=True)\n",
+    "df.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "20f7efee",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:44.928599Z",
+     "iopub.status.busy": "2024-07-12T09:07:44.928164Z",
+     "iopub.status.idle": "2024-07-12T09:07:50.980448Z",
+     "shell.execute_reply": "2024-07-12T09:07:50.979436Z"
+    },
+    "papermill": {
+     "duration": 6.068074,
+     "end_time": "2024-07-12T09:07:50.983124",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:44.915050",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df.replace([np.inf, -np.inf], np.nan, inplace=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "5505b4d7",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:51.008766Z",
+     "iopub.status.busy": "2024-07-12T09:07:51.008371Z",
+     "iopub.status.idle": "2024-07-12T09:07:51.027246Z",
+     "shell.execute_reply": "2024-07-12T09:07:51.026268Z"
+    },
+    "papermill": {
+     "duration": 0.034322,
+     "end_time": "2024-07-12T09:07:51.029521",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:50.995199",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>Gender</th>\n",
+       "      <th>Age</th>\n",
+       "      <th>Driving_License</th>\n",
+       "      <th>Region_Code</th>\n",
+       "      <th>Previously_Insured</th>\n",
+       "      <th>Vehicle_Age</th>\n",
+       "      <th>Vehicle_Damage</th>\n",
+       "      <th>Annual_Premium</th>\n",
+       "      <th>Policy_Sales_Channel</th>\n",
+       "      <th>Vintage</th>\n",
+       "      <th>Response</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>21</td>\n",
+       "      <td>1</td>\n",
+       "      <td>35.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>65101.0</td>\n",
+       "      <td>124.0</td>\n",
+       "      <td>187</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>43</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>&gt; 2 Years</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>58911.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>288</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>25</td>\n",
+       "      <td>1</td>\n",
+       "      <td>14.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>38043.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>254</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>35</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>2630.0</td>\n",
+       "      <td>156.0</td>\n",
+       "      <td>76</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>36</td>\n",
+       "      <td>1</td>\n",
+       "      <td>15.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>31951.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>294</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504793</th>\n",
+       "      <td>11504793</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>48</td>\n",
+       "      <td>1</td>\n",
+       "      <td>6.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>27412.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>218</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504794</th>\n",
+       "      <td>11504794</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>26</td>\n",
+       "      <td>1</td>\n",
+       "      <td>36.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>29509.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>115</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504795</th>\n",
+       "      <td>11504795</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>29</td>\n",
+       "      <td>1</td>\n",
+       "      <td>32.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>2630.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>189</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504796</th>\n",
+       "      <td>11504796</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>51</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>48443.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>274</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504797</th>\n",
+       "      <td>11504797</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>25</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>32855.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>189</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>11504798 rows × 12 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                id  Gender  Age  Driving_License  Region_Code  \\\n",
+       "0                0    Male   21                1         35.0   \n",
+       "1                1    Male   43                1         28.0   \n",
+       "2                2  Female   25                1         14.0   \n",
+       "3                3  Female   35                1          1.0   \n",
+       "4                4  Female   36                1         15.0   \n",
+       "...            ...     ...  ...              ...          ...   \n",
+       "11504793  11504793    Male   48                1          6.0   \n",
+       "11504794  11504794  Female   26                1         36.0   \n",
+       "11504795  11504795  Female   29                1         32.0   \n",
+       "11504796  11504796  Female   51                1         28.0   \n",
+       "11504797  11504797    Male   25                1         28.0   \n",
+       "\n",
+       "          Previously_Insured Vehicle_Age Vehicle_Damage  Annual_Premium  \\\n",
+       "0                          0    1-2 Year            Yes         65101.0   \n",
+       "1                          0   > 2 Years            Yes         58911.0   \n",
+       "2                          1    < 1 Year             No         38043.0   \n",
+       "3                          0    1-2 Year            Yes          2630.0   \n",
+       "4                          1    1-2 Year             No         31951.0   \n",
+       "...                      ...         ...            ...             ...   \n",
+       "11504793                   0    1-2 Year            Yes         27412.0   \n",
+       "11504794                   0    < 1 Year            Yes         29509.0   \n",
+       "11504795                   1    < 1 Year             No          2630.0   \n",
+       "11504796                   0    1-2 Year            Yes         48443.0   \n",
+       "11504797                   1    < 1 Year             No         32855.0   \n",
+       "\n",
+       "          Policy_Sales_Channel  Vintage  Response  \n",
+       "0                        124.0      187         0  \n",
+       "1                         26.0      288         1  \n",
+       "2                        152.0      254         0  \n",
+       "3                        156.0       76         0  \n",
+       "4                        152.0      294         0  \n",
+       "...                        ...      ...       ...  \n",
+       "11504793                  26.0      218         0  \n",
+       "11504794                 152.0      115         1  \n",
+       "11504795                 152.0      189         0  \n",
+       "11504796                  26.0      274         1  \n",
+       "11504797                 152.0      189         0  \n",
+       "\n",
+       "[11504798 rows x 12 columns]"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e3b82f44",
+   "metadata": {
+    "papermill": {
+     "duration": 0.011881,
+     "end_time": "2024-07-12T09:07:51.053864",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:51.041983",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Plot distributions"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "1df9d272",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:51.079933Z",
+     "iopub.status.busy": "2024-07-12T09:07:51.079529Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.157845Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.156802Z"
+    },
+    "papermill": {
+     "duration": 4.09401,
+     "end_time": "2024-07-12T09:07:55.160276",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:51.066266",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "['Age', 'Region_Code', 'Annual_Premium', 'Policy_Sales_Channel', 'Vintage']"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "num_list = []\n",
+    "\n",
+    "for col in df.columns:\n",
+    "    if df[col].nunique() > 3:\n",
+    "        num_list.append(col)\n",
+    "        \n",
+    "num_list = num_list[1:]\n",
+    "num_list"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e2e7f21f",
+   "metadata": {
+    "papermill": {
+     "duration": 0.012183,
+     "end_time": "2024-07-12T09:07:55.185068",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.172885",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## a sample"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "eba73526",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.211371Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.210991Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.215583Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.214622Z"
+    },
+    "papermill": {
+     "duration": 0.020358,
+     "end_time": "2024-07-12T09:07:55.217700",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.197342",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# fig, ax = plt.subplots(len(num_list), len(num_list), figsize=(25, 25))\n",
+    "# df_sample = df.sample(100000)\n",
+    "# bar = progressbar.ProgressBar(max_value=len(num_list)*len(num_list))\n",
+    "# t = 0\n",
+    "# for i, col1 in enumerate(num_list):\n",
+    "#     for j, col2 in enumerate(num_list):\n",
+    "#         plt.sca(ax[i, j])\n",
+    "#         sns.scatterplot(data=df_sample, x=col1, y=col2, hue='Response', ax=ax[i, j])\n",
+    "#         bar.update(t+1)\n",
+    "#         t = t+1\n",
+    "# plt.tight_layout()\n",
+    "# # may be image building take time\n",
+    "# plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "2e10247b",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.244678Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.244303Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.248960Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.247777Z"
+    },
+    "papermill": {
+     "duration": 0.021452,
+     "end_time": "2024-07-12T09:07:55.251510",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.230058",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# fig, ax = plt.subplots(len(num_list), 1, figsize=(8, len(num_list) * 4))  \n",
+    "\n",
+    "# for i, col in enumerate(tqdm(num_list, desc=\"Plotting\")):\n",
+    "#     plt.sca(ax[i])\n",
+    "#     sns.histplot(data=df_sample, x=col, kde=True)\n",
+    "#     ax[i].set_title(f'Distribution of {col}')\n",
+    "\n",
+    "# plt.tight_layout()\n",
+    "# plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ebd3dc68",
+   "metadata": {
+    "papermill": {
+     "duration": 0.013336,
+     "end_time": "2024-07-12T09:07:55.277411",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.264075",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## Resopnse with 1 "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "1fd396e1",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.304890Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.304476Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.309201Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.308053Z"
+    },
+    "papermill": {
+     "duration": 0.021052,
+     "end_time": "2024-07-12T09:07:55.311475",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.290423",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# df_resp_1 = df[df['Response'] == 1]\n",
+    "# df_resp_0 = df[df['Response'] == 0]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "3f8fca67",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.337752Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.337096Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.341823Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.340674Z"
+    },
+    "papermill": {
+     "duration": 0.020254,
+     "end_time": "2024-07-12T09:07:55.344099",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.323845",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# fig, ax = plt.subplots(len(num_list), len(num_list), figsize=(25, 25))\n",
+    "\n",
+    "# bar = progressbar.ProgressBar(max_value=len(num_list)*len(num_list))\n",
+    "# t = 0\n",
+    "# for i, col1 in enumerate(num_list):\n",
+    "#     for j, col2 in enumerate(num_list):\n",
+    "#         plt.sca(ax[i, j])\n",
+    "#         sns.scatterplot(data=df_resp_1, x=col1, y=col2, ax=ax[i, j])\n",
+    "#         bar.update(t+1)\n",
+    "#         t = t+1\n",
+    "# plt.tight_layout()\n",
+    "# # may be image building take time\n",
+    "# plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "715843ef",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.371297Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.370947Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.375878Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.374632Z"
+    },
+    "papermill": {
+     "duration": 0.020891,
+     "end_time": "2024-07-12T09:07:55.378101",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.357210",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# fig, ax = plt.subplots(len(num_list), 1, figsize=(8, len(num_list) * 4))  \n",
+    "\n",
+    "# for i, col in enumerate(tqdm(num_list, desc=\"Plotting\")):\n",
+    "#     plt.sca(ax[i])\n",
+    "#     sns.histplot(data=df_resp_1, x=col, kde=True)\n",
+    "#     sns.histplot(data=df_resp_0, x=col, kde=True)\n",
+    "#     ax[i].set_title(f'Distribution of {col}')\n",
+    "\n",
+    "# plt.tight_layout()\n",
+    "# plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8705bcfc",
+   "metadata": {
+    "papermill": {
+     "duration": 0.011937,
+     "end_time": "2024-07-12T09:07:55.402323",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.390386",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## Response with 0"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "f7e498a3",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.428582Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.428190Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.432982Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.431986Z"
+    },
+    "papermill": {
+     "duration": 0.020526,
+     "end_time": "2024-07-12T09:07:55.435094",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.414568",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# fig, ax = plt.subplots(len(num_list), len(num_list), figsize=(25, 25))\n",
+    "# df_resp_0 = df[df['Response'] == 0]\n",
+    "# bar = progressbar.ProgressBar(max_value=len(num_list)*len(num_list))\n",
+    "# t = 0\n",
+    "# for i, col1 in enumerate(num_list):\n",
+    "#     for j, col2 in enumerate(num_list):\n",
+    "#         plt.sca(ax[i, j])\n",
+    "#         sns.scatterplot(data=df_resp_0, x=col1, y=col2, ax=ax[i, j])\n",
+    "#         bar.update(t+1)\n",
+    "#         t = t+1\n",
+    "# plt.tight_layout()\n",
+    "# # may be image building take time\n",
+    "# plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "f6f9f229",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.462224Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.461849Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.466848Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.465841Z"
+    },
+    "papermill": {
+     "duration": 0.021546,
+     "end_time": "2024-07-12T09:07:55.469025",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.447479",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# fig, ax = plt.subplots(1, 4, figsize=(12, 6))\n",
+    "# gender_counts = df['Gender'].value_counts()\n",
+    "# vehicle_damage_counts = df['Vehicle_Damage'].value_counts()\n",
+    "# resp_counts = df['Response'].value_counts()\n",
+    "# vehicle_age_counts = df['Vehicle_Age'].value_counts()\n",
+    "# ax[0].pie(gender_counts, labels=gender_counts.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette(\"pastel\"))\n",
+    "# ax[0].set_title('Gender')\n",
+    "# ax[1].pie(vehicle_damage_counts, labels=vehicle_damage_counts.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette(\"pastel\"))\n",
+    "# ax[1].set_title('Vehicle Damage')\n",
+    "# ax[2].pie(resp_counts, labels=resp_counts.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette(\"pastel\"))\n",
+    "# ax[2].set_title('Response')\n",
+    "# ax[3].pie(vehicle_age_counts, labels=vehicle_age_counts.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette(\"pastel\"))\n",
+    "# ax[3].set_title('Vehicle Age')\n",
+    "# plt.tight_layout()\n",
+    "# plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "b8dccccb",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.551358Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.550989Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.555968Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.554917Z"
+    },
+    "papermill": {
+     "duration": 0.076678,
+     "end_time": "2024-07-12T09:07:55.558068",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.481390",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# columns = list(df.columns)[1:-1]\n",
+    "# num_columns = len(columns)\n",
+    "# breadth = 3\n",
+    "# length = math.ceil(num_columns / breadth)\n",
+    "\n",
+    "# # Create subplots\n",
+    "# fig, ax = plt.subplots(length, breadth, figsize=(15, 5 * length))\n",
+    "\n",
+    "# k = 0\n",
+    "\n",
+    "# bar = progressbar.ProgressBar(max_value=num_columns)\n",
+    "\n",
+    "# # Flatten the axes array for easier indexing\n",
+    "# ax = ax.flatten()\n",
+    "\n",
+    "# for i in range(len(ax)):\n",
+    "#     if k < num_columns:\n",
+    "#         sns.scatterplot(\n",
+    "#             data=df,\n",
+    "#             x=columns[k],\n",
+    "#             y='Response',\n",
+    "#             ax=ax[i]\n",
+    "#         )\n",
+    "#         ax[i].set_title(f\"{columns[k]} vs Response\")\n",
+    "#         k += 1\n",
+    "#     else:\n",
+    "#         ax[i].axis('off')\n",
+    "#     bar.update(k)\n",
+    "\n",
+    "# plt.tight_layout()\n",
+    "# plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "id": "6582f630",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.584151Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.583758Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.588435Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.587481Z"
+    },
+    "papermill": {
+     "duration": 0.020372,
+     "end_time": "2024-07-12T09:07:55.590629",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.570257",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# sns.heatmap(df[num_list].corr(), cmap=\"Greens\", annot=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "id": "aec9c9b5",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.617113Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.616699Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.621041Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.620088Z"
+    },
+    "papermill": {
+     "duration": 0.020145,
+     "end_time": "2024-07-12T09:07:55.623271",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.603126",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# df = df.drop(columns = ['Driving_License','Region_Code','Vintage'])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "b5116c12",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.650225Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.649155Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.671354Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.669750Z"
+    },
+    "papermill": {
+     "duration": 0.038145,
+     "end_time": "2024-07-12T09:07:55.673851",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.635706",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>Gender</th>\n",
+       "      <th>Age</th>\n",
+       "      <th>Driving_License</th>\n",
+       "      <th>Region_Code</th>\n",
+       "      <th>Previously_Insured</th>\n",
+       "      <th>Vehicle_Age</th>\n",
+       "      <th>Vehicle_Damage</th>\n",
+       "      <th>Annual_Premium</th>\n",
+       "      <th>Policy_Sales_Channel</th>\n",
+       "      <th>Vintage</th>\n",
+       "      <th>Response</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>21</td>\n",
+       "      <td>1</td>\n",
+       "      <td>35.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>65101.0</td>\n",
+       "      <td>124.0</td>\n",
+       "      <td>187</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>43</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>&gt; 2 Years</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>58911.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>288</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>25</td>\n",
+       "      <td>1</td>\n",
+       "      <td>14.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>38043.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>254</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>35</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>2630.0</td>\n",
+       "      <td>156.0</td>\n",
+       "      <td>76</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>36</td>\n",
+       "      <td>1</td>\n",
+       "      <td>15.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>31951.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>294</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504793</th>\n",
+       "      <td>11504793</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>48</td>\n",
+       "      <td>1</td>\n",
+       "      <td>6.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>27412.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>218</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504794</th>\n",
+       "      <td>11504794</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>26</td>\n",
+       "      <td>1</td>\n",
+       "      <td>36.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>29509.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>115</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504795</th>\n",
+       "      <td>11504795</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>29</td>\n",
+       "      <td>1</td>\n",
+       "      <td>32.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>2630.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>189</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504796</th>\n",
+       "      <td>11504796</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>51</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>48443.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>274</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504797</th>\n",
+       "      <td>11504797</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>25</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>32855.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>189</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>11504798 rows × 12 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                id  Gender  Age  Driving_License  Region_Code  \\\n",
+       "0                0    Male   21                1         35.0   \n",
+       "1                1    Male   43                1         28.0   \n",
+       "2                2  Female   25                1         14.0   \n",
+       "3                3  Female   35                1          1.0   \n",
+       "4                4  Female   36                1         15.0   \n",
+       "...            ...     ...  ...              ...          ...   \n",
+       "11504793  11504793    Male   48                1          6.0   \n",
+       "11504794  11504794  Female   26                1         36.0   \n",
+       "11504795  11504795  Female   29                1         32.0   \n",
+       "11504796  11504796  Female   51                1         28.0   \n",
+       "11504797  11504797    Male   25                1         28.0   \n",
+       "\n",
+       "          Previously_Insured Vehicle_Age Vehicle_Damage  Annual_Premium  \\\n",
+       "0                          0    1-2 Year            Yes         65101.0   \n",
+       "1                          0   > 2 Years            Yes         58911.0   \n",
+       "2                          1    < 1 Year             No         38043.0   \n",
+       "3                          0    1-2 Year            Yes          2630.0   \n",
+       "4                          1    1-2 Year             No         31951.0   \n",
+       "...                      ...         ...            ...             ...   \n",
+       "11504793                   0    1-2 Year            Yes         27412.0   \n",
+       "11504794                   0    < 1 Year            Yes         29509.0   \n",
+       "11504795                   1    < 1 Year             No          2630.0   \n",
+       "11504796                   0    1-2 Year            Yes         48443.0   \n",
+       "11504797                   1    < 1 Year             No         32855.0   \n",
+       "\n",
+       "          Policy_Sales_Channel  Vintage  Response  \n",
+       "0                        124.0      187         0  \n",
+       "1                         26.0      288         1  \n",
+       "2                        152.0      254         0  \n",
+       "3                        156.0       76         0  \n",
+       "4                        152.0      294         0  \n",
+       "...                        ...      ...       ...  \n",
+       "11504793                  26.0      218         0  \n",
+       "11504794                 152.0      115         1  \n",
+       "11504795                 152.0      189         0  \n",
+       "11504796                  26.0      274         1  \n",
+       "11504797                 152.0      189         0  \n",
+       "\n",
+       "[11504798 rows x 12 columns]"
+      ]
+     },
+     "execution_count": 21,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c5c0cbd8",
+   "metadata": {
+    "papermill": {
+     "duration": 0.012797,
+     "end_time": "2024-07-12T09:07:55.699706",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.686909",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Pre processing"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "id": "52906d16",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.727878Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.727493Z",
+     "iopub.status.idle": "2024-07-12T09:07:55.732575Z",
+     "shell.execute_reply": "2024-07-12T09:07:55.731610Z"
+    },
+    "papermill": {
+     "duration": 0.021514,
+     "end_time": "2024-07-12T09:07:55.734792",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.713278",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "encoder_dict = {\n",
+    "    'Gender' : {\n",
+    "        'Male':0,\n",
+    "        'Female':1\n",
+    "    },\n",
+    "    'Vehicle_Age' : {\n",
+    "        '< 1 Year':0.5,\n",
+    "        '1-2 Year':1.5,\n",
+    "        '> 2 Years':2.5\n",
+    "    },\n",
+    "    'Vehicle_Damage' : {\n",
+    "        'Yes':1,\n",
+    "        'No':0\n",
+    "    }\n",
+    "}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "id": "5d0761c8",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:07:55.765574Z",
+     "iopub.status.busy": "2024-07-12T09:07:55.764239Z",
+     "iopub.status.idle": "2024-07-12T09:08:08.943513Z",
+     "shell.execute_reply": "2024-07-12T09:08:08.942376Z"
+    },
+    "papermill": {
+     "duration": 13.199091,
+     "end_time": "2024-07-12T09:08:08.946462",
+     "exception": false,
+     "start_time": "2024-07-12T09:07:55.747371",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>Gender</th>\n",
+       "      <th>Age</th>\n",
+       "      <th>Driving_License</th>\n",
+       "      <th>Region_Code</th>\n",
+       "      <th>Previously_Insured</th>\n",
+       "      <th>Vehicle_Age</th>\n",
+       "      <th>Vehicle_Damage</th>\n",
+       "      <th>Annual_Premium</th>\n",
+       "      <th>Policy_Sales_Channel</th>\n",
+       "      <th>Vintage</th>\n",
+       "      <th>Response</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>21</td>\n",
+       "      <td>1</td>\n",
+       "      <td>35.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1.5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>65101.0</td>\n",
+       "      <td>124.0</td>\n",
+       "      <td>187</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>43</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>2.5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>58911.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>288</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>1</td>\n",
+       "      <td>25</td>\n",
+       "      <td>1</td>\n",
+       "      <td>14.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0.5</td>\n",
+       "      <td>0</td>\n",
+       "      <td>38043.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>254</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>35</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1.5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2630.0</td>\n",
+       "      <td>156.0</td>\n",
+       "      <td>76</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>1</td>\n",
+       "      <td>36</td>\n",
+       "      <td>1</td>\n",
+       "      <td>15.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1.5</td>\n",
+       "      <td>0</td>\n",
+       "      <td>31951.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>294</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504793</th>\n",
+       "      <td>11504793</td>\n",
+       "      <td>0</td>\n",
+       "      <td>48</td>\n",
+       "      <td>1</td>\n",
+       "      <td>6.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1.5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>27412.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>218</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504794</th>\n",
+       "      <td>11504794</td>\n",
+       "      <td>1</td>\n",
+       "      <td>26</td>\n",
+       "      <td>1</td>\n",
+       "      <td>36.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>29509.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>115</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504795</th>\n",
+       "      <td>11504795</td>\n",
+       "      <td>1</td>\n",
+       "      <td>29</td>\n",
+       "      <td>1</td>\n",
+       "      <td>32.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0.5</td>\n",
+       "      <td>0</td>\n",
+       "      <td>2630.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>189</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504796</th>\n",
+       "      <td>11504796</td>\n",
+       "      <td>1</td>\n",
+       "      <td>51</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1.5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>48443.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>274</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11504797</th>\n",
+       "      <td>11504797</td>\n",
+       "      <td>0</td>\n",
+       "      <td>25</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0.5</td>\n",
+       "      <td>0</td>\n",
+       "      <td>32855.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>189</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>11504798 rows × 12 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                id  Gender  Age  Driving_License  Region_Code  \\\n",
+       "0                0       0   21                1         35.0   \n",
+       "1                1       0   43                1         28.0   \n",
+       "2                2       1   25                1         14.0   \n",
+       "3                3       1   35                1          1.0   \n",
+       "4                4       1   36                1         15.0   \n",
+       "...            ...     ...  ...              ...          ...   \n",
+       "11504793  11504793       0   48                1          6.0   \n",
+       "11504794  11504794       1   26                1         36.0   \n",
+       "11504795  11504795       1   29                1         32.0   \n",
+       "11504796  11504796       1   51                1         28.0   \n",
+       "11504797  11504797       0   25                1         28.0   \n",
+       "\n",
+       "          Previously_Insured  Vehicle_Age  Vehicle_Damage  Annual_Premium  \\\n",
+       "0                          0          1.5               1         65101.0   \n",
+       "1                          0          2.5               1         58911.0   \n",
+       "2                          1          0.5               0         38043.0   \n",
+       "3                          0          1.5               1          2630.0   \n",
+       "4                          1          1.5               0         31951.0   \n",
+       "...                      ...          ...             ...             ...   \n",
+       "11504793                   0          1.5               1         27412.0   \n",
+       "11504794                   0          0.5               1         29509.0   \n",
+       "11504795                   1          0.5               0          2630.0   \n",
+       "11504796                   0          1.5               1         48443.0   \n",
+       "11504797                   1          0.5               0         32855.0   \n",
+       "\n",
+       "          Policy_Sales_Channel  Vintage  Response  \n",
+       "0                        124.0      187         0  \n",
+       "1                         26.0      288         1  \n",
+       "2                        152.0      254         0  \n",
+       "3                        156.0       76         0  \n",
+       "4                        152.0      294         0  \n",
+       "...                        ...      ...       ...  \n",
+       "11504793                  26.0      218         0  \n",
+       "11504794                 152.0      115         1  \n",
+       "11504795                 152.0      189         0  \n",
+       "11504796                  26.0      274         1  \n",
+       "11504797                 152.0      189         0  \n",
+       "\n",
+       "[11504798 rows x 12 columns]"
+      ]
+     },
+     "execution_count": 23,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.replace(encoder_dict, inplace=True)\n",
+    "df"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "id": "e0c2d028",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:08:08.978637Z",
+     "iopub.status.busy": "2024-07-12T09:08:08.978053Z",
+     "iopub.status.idle": "2024-07-12T09:08:09.334075Z",
+     "shell.execute_reply": "2024-07-12T09:08:09.333000Z"
+    },
+    "papermill": {
+     "duration": 0.374042,
+     "end_time": "2024-07-12T09:08:09.336859",
+     "exception": false,
+     "start_time": "2024-07-12T09:08:08.962817",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "x = df.iloc[:,1 :-1]\n",
+    "y = df.iloc[:, -1]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "9d701323",
+   "metadata": {
+    "papermill": {
+     "duration": 0.013387,
+     "end_time": "2024-07-12T09:08:09.364098",
+     "exception": false,
+     "start_time": "2024-07-12T09:08:09.350711",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Model training "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "id": "62513a8d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:08:09.393632Z",
+     "iopub.status.busy": "2024-07-12T09:08:09.393262Z",
+     "iopub.status.idle": "2024-07-12T09:08:12.276948Z",
+     "shell.execute_reply": "2024-07-12T09:08:12.275825Z"
+    },
+    "papermill": {
+     "duration": 2.901727,
+     "end_time": "2024-07-12T09:08:12.279551",
+     "exception": false,
+     "start_time": "2024-07-12T09:08:09.377824",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "x_train,x_test,y_train,y_test = train_test_split(\n",
+    "    x,y\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "281a06cd",
+   "metadata": {
+    "papermill": {
+     "duration": 0.013,
+     "end_time": "2024-07-12T09:08:12.306379",
+     "exception": false,
+     "start_time": "2024-07-12T09:08:12.293379",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### Logistic regression"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "id": "704c5904",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:08:12.334631Z",
+     "iopub.status.busy": "2024-07-12T09:08:12.333715Z",
+     "iopub.status.idle": "2024-07-12T09:09:26.567072Z",
+     "shell.execute_reply": "2024-07-12T09:09:26.565549Z"
+    },
+    "papermill": {
+     "duration": 74.25004,
+     "end_time": "2024-07-12T09:09:26.569547",
+     "exception": false,
+     "start_time": "2024-07-12T09:08:12.319507",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/opt/conda/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:458: ConvergenceWarning: lbfgs failed to converge (status=1):\n",
+      "STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.\n",
+      "\n",
+      "Increase the number of iterations (max_iter) or scale the data as shown in:\n",
+      "    https://scikit-learn.org/stable/modules/preprocessing.html\n",
+      "Please also refer to the documentation for alternative solver options:\n",
+      "    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression\n",
+      "  n_iter_i = _check_optimize_result(\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy: 0.8615492663931577\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],\n",
+    "lr = LogisticRegression(\n",
+    "    max_iter=100,\n",
+    "    C = 0.1,\n",
+    "    n_jobs = -1,\n",
+    ")\n",
+    "lr.fit(x_train,y_train)\n",
+    "y_pred_lr = lr.predict(x_test)\n",
+    "print(\"Accuracy:\", accuracy_score(y_test, y_pred_lr))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bb14f223",
+   "metadata": {
+    "papermill": {
+     "duration": 0.013148,
+     "end_time": "2024-07-12T09:09:26.596291",
+     "exception": false,
+     "start_time": "2024-07-12T09:09:26.583143",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### Decision tree"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "id": "68f75ba3",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:09:26.625879Z",
+     "iopub.status.busy": "2024-07-12T09:09:26.624883Z",
+     "iopub.status.idle": "2024-07-12T09:10:22.199402Z",
+     "shell.execute_reply": "2024-07-12T09:10:22.198312Z"
+    },
+    "papermill": {
+     "duration": 55.604625,
+     "end_time": "2024-07-12T09:10:22.214481",
+     "exception": false,
+     "start_time": "2024-07-12T09:09:26.609856",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy: 0.876794381475558\n"
+     ]
+    }
+   ],
+   "source": [
+    "DT = DecisionTreeClassifier(\n",
+    "    max_depth = 6,\n",
+    "    class_weight = {\n",
+    "        1:0.12,\n",
+    "        0:0.88\n",
+    "    }\n",
+    ")\n",
+    "DT.fit(x_train,y_train)\n",
+    "y_pred_DT = DT.predict(x_test)\n",
+    "print(\"Accuracy:\", accuracy_score(y_test, y_pred_DT))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d04385ad",
+   "metadata": {
+    "papermill": {
+     "duration": 0.01289,
+     "end_time": "2024-07-12T09:10:22.240615",
+     "exception": false,
+     "start_time": "2024-07-12T09:10:22.227725",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### Random Forest"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "id": "834e6124",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:10:22.270329Z",
+     "iopub.status.busy": "2024-07-12T09:10:22.269967Z",
+     "iopub.status.idle": "2024-07-12T09:11:42.649060Z",
+     "shell.execute_reply": "2024-07-12T09:11:42.647787Z"
+    },
+    "papermill": {
+     "duration": 80.410499,
+     "end_time": "2024-07-12T09:11:42.665402",
+     "exception": false,
+     "start_time": "2024-07-12T09:10:22.254903",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy: 0.876794381475558\n"
+     ]
+    }
+   ],
+   "source": [
+    "RF = RandomForestClassifier(\n",
+    "    n_estimators=5,\n",
+    "    max_depth = 6,\n",
+    "    class_weight = {\n",
+    "        1:0.12,\n",
+    "        0:0.88\n",
+    "    }\n",
+    ")\n",
+    "RF.fit(x_train,y_train)\n",
+    "y_pred_RF = DT.predict(x_test)\n",
+    "print(\"Accuracy:\", accuracy_score(y_test, y_pred_RF))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "08229212",
+   "metadata": {
+    "papermill": {
+     "duration": 0.013526,
+     "end_time": "2024-07-12T09:11:42.692539",
+     "exception": false,
+     "start_time": "2024-07-12T09:11:42.679013",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### Voting classifier"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "id": "15593d40",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:11:42.721273Z",
+     "iopub.status.busy": "2024-07-12T09:11:42.720895Z",
+     "iopub.status.idle": "2024-07-12T09:15:39.275250Z",
+     "shell.execute_reply": "2024-07-12T09:15:39.274113Z"
+    },
+    "papermill": {
+     "duration": 236.585309,
+     "end_time": "2024-07-12T09:15:39.291408",
+     "exception": false,
+     "start_time": "2024-07-12T09:11:42.706099",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/opt/conda/lib/python3.10/site-packages/sklearn/linear_model/_logistic.py:458: ConvergenceWarning: lbfgs failed to converge (status=1):\n",
+      "STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.\n",
+      "\n",
+      "Increase the number of iterations (max_iter) or scale the data as shown in:\n",
+      "    https://scikit-learn.org/stable/modules/preprocessing.html\n",
+      "Please also refer to the documentation for alternative solver options:\n",
+      "    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression\n",
+      "  n_iter_i = _check_optimize_result(\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy: 0.88\n"
+     ]
+    }
+   ],
+   "source": [
+    "voting_clf_hard = VotingClassifier(\n",
+    "    estimators=[\n",
+    "        ('LogisticRegression', lr),  \n",
+    "        ('DecisionTree', DT),  \n",
+    "        ('RandomForest', RF),  \n",
+    "    ],\n",
+    "    voting='hard'  \n",
+    ")\n",
+    "\n",
+    "voting_clf_hard.fit(x_train, y_train)\n",
+    "y_pred_voting_clf_hard = voting_clf_hard.predict(x_test)\n",
+    "\n",
+    "accuracy = voting_clf_hard.score(x_test, y_test)\n",
+    "print(f'Accuracy: {accuracy:.2f}')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "id": "d8494053",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:15:39.320841Z",
+     "iopub.status.busy": "2024-07-12T09:15:39.320441Z",
+     "iopub.status.idle": "2024-07-12T09:19:07.856358Z",
+     "shell.execute_reply": "2024-07-12T09:19:07.854919Z"
+    },
+    "papermill": {
+     "duration": 208.567492,
+     "end_time": "2024-07-12T09:19:07.872827",
+     "exception": false,
+     "start_time": "2024-07-12T09:15:39.305335",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy: 0.88\n"
+     ]
+    }
+   ],
+   "source": [
+    "voting_clf_soft = VotingClassifier(\n",
+    "    estimators=[\n",
+    "        ('LogisticRegression', lr),  \n",
+    "        ('DecisionTree', DT),  \n",
+    "        ('RandomForest', RF),  \n",
+    "    ],\n",
+    "    voting='soft'  \n",
+    ")\n",
+    "\n",
+    "voting_clf_soft.fit(x_train, y_train)\n",
+    "y_pred_voting_clf_soft = voting_clf_soft.predict(x_test)\n",
+    "\n",
+    "accuracy = voting_clf_soft.score(x_test, y_test)\n",
+    "print(f'Accuracy: {accuracy:.2f}')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "id": "b7af083f",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:19:07.902657Z",
+     "iopub.status.busy": "2024-07-12T09:19:07.902267Z",
+     "iopub.status.idle": "2024-07-12T09:20:33.803118Z",
+     "shell.execute_reply": "2024-07-12T09:20:33.802152Z"
+    },
+    "papermill": {
+     "duration": 85.918651,
+     "end_time": "2024-07-12T09:20:33.805683",
+     "exception": false,
+     "start_time": "2024-07-12T09:19:07.887032",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "lr_train_pred = lr.predict(x_train).reshape(-1, 1)\n",
+    "DT_train_pred = DT.predict(x_train).reshape(-1, 1)\n",
+    "RF_train_pred = RF.predict(x_train).reshape(-1, 1)\n",
+    "voting_clf_soft_train_pred = voting_clf_soft.predict(x_train).reshape(-1, 1)\n",
+    "voting_clf_hard_train_pred = voting_clf_hard.predict(x_train).reshape(-1, 1)\n",
+    "\n",
+    "lr_test_pred = lr.predict(x_test).reshape(-1, 1)\n",
+    "DT_test_pred = DT.predict(x_test).reshape(-1, 1)\n",
+    "RF_test_pred = RF.predict(x_test).reshape(-1, 1)\n",
+    "voting_clf_soft_test_pred = voting_clf_soft.predict(x_test).reshape(-1, 1)\n",
+    "voting_clf_hard_test_pred = voting_clf_hard.predict(x_test).reshape(-1, 1)\n",
+    "\n",
+    "X_train_meta = np.hstack(\n",
+    "    (\n",
+    "        lr_train_pred, \n",
+    "        DT_train_pred, \n",
+    "        RF_train_pred,\n",
+    "        voting_clf_soft_train_pred,\n",
+    "        voting_clf_hard_train_pred\n",
+    "    )\n",
+    ")\n",
+    "X_test_meta = np.hstack(\n",
+    "    (\n",
+    "        lr_test_pred, \n",
+    "        DT_test_pred, \n",
+    "        RF_test_pred,\n",
+    "        voting_clf_soft_test_pred,\n",
+    "        voting_clf_hard_test_pred\n",
+    "    )\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6dc0f055",
+   "metadata": {
+    "papermill": {
+     "duration": 0.013372,
+     "end_time": "2024-07-12T09:20:33.833081",
+     "exception": false,
+     "start_time": "2024-07-12T09:20:33.819709",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### adaboostclassifier"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "id": "cb0ee478",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:20:33.862876Z",
+     "iopub.status.busy": "2024-07-12T09:20:33.861786Z",
+     "iopub.status.idle": "2024-07-12T09:21:09.971373Z",
+     "shell.execute_reply": "2024-07-12T09:21:09.970304Z"
+    },
+    "papermill": {
+     "duration": 36.140007,
+     "end_time": "2024-07-12T09:21:09.986627",
+     "exception": false,
+     "start_time": "2024-07-12T09:20:33.846620",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "AdaBoost Accuracy: 0.88\n"
+     ]
+    }
+   ],
+   "source": [
+    "ada = AdaBoostClassifier(n_estimators=10)\n",
+    "ada.fit(X_train_meta, y_train)\n",
+    "ada_predictions = ada.predict(X_test_meta)\n",
+    "ada_accuracy = ada.score(X_test_meta, y_test)\n",
+    "print(f'AdaBoost Accuracy: {ada_accuracy:.2f}')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e194a5f6",
+   "metadata": {
+    "papermill": {
+     "duration": 0.013542,
+     "end_time": "2024-07-12T09:21:10.013922",
+     "exception": false,
+     "start_time": "2024-07-12T09:21:10.000380",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### gradintboostingclassifier"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "id": "9b208157",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:21:10.044286Z",
+     "iopub.status.busy": "2024-07-12T09:21:10.043905Z",
+     "iopub.status.idle": "2024-07-12T09:21:27.667801Z",
+     "shell.execute_reply": "2024-07-12T09:21:27.666750Z"
+    },
+    "papermill": {
+     "duration": 17.642462,
+     "end_time": "2024-07-12T09:21:27.670188",
+     "exception": false,
+     "start_time": "2024-07-12T09:21:10.027726",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Gradient Boosting Accuracy: 0.88\n"
+     ]
+    }
+   ],
+   "source": [
+    "gboost = GradientBoostingClassifier(n_estimators=10)\n",
+    "gboost.fit(X_train_meta, y_train)\n",
+    "gboost_predictions = gboost.predict(X_test_meta)\n",
+    "gboost_accuracy = gboost.score(X_test_meta, y_test)\n",
+    "print(f'Gradient Boosting Accuracy: {gboost_accuracy:.2f}')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4bfefd5c",
+   "metadata": {
+    "papermill": {
+     "duration": 0.013858,
+     "end_time": "2024-07-12T09:21:27.698105",
+     "exception": false,
+     "start_time": "2024-07-12T09:21:27.684247",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Testing"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "id": "b8e164e8",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:21:27.728018Z",
+     "iopub.status.busy": "2024-07-12T09:21:27.727165Z",
+     "iopub.status.idle": "2024-07-12T09:21:39.881614Z",
+     "shell.execute_reply": "2024-07-12T09:21:39.880480Z"
+    },
+    "papermill": {
+     "duration": 12.172835,
+     "end_time": "2024-07-12T09:21:39.884886",
+     "exception": false,
+     "start_time": "2024-07-12T09:21:27.712051",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "tdf = pd.read_csv('/kaggle/input/playground-series-s4e7/test.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "id": "0f5a2dd7",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:21:39.922940Z",
+     "iopub.status.busy": "2024-07-12T09:21:39.921730Z",
+     "iopub.status.idle": "2024-07-12T09:21:40.440810Z",
+     "shell.execute_reply": "2024-07-12T09:21:40.439442Z"
+    },
+    "papermill": {
+     "duration": 0.537283,
+     "end_time": "2024-07-12T09:21:40.443143",
+     "exception": false,
+     "start_time": "2024-07-12T09:21:39.905860",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Gender</th>\n",
+       "      <th>Age</th>\n",
+       "      <th>Driving_License</th>\n",
+       "      <th>Region_Code</th>\n",
+       "      <th>Previously_Insured</th>\n",
+       "      <th>Vehicle_Age</th>\n",
+       "      <th>Vehicle_Damage</th>\n",
+       "      <th>Annual_Premium</th>\n",
+       "      <th>Policy_Sales_Channel</th>\n",
+       "      <th>Vintage</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>Female</td>\n",
+       "      <td>20</td>\n",
+       "      <td>1</td>\n",
+       "      <td>47.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>2630.0</td>\n",
+       "      <td>160.0</td>\n",
+       "      <td>228</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>Male</td>\n",
+       "      <td>47</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>37483.0</td>\n",
+       "      <td>124.0</td>\n",
+       "      <td>123</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>Male</td>\n",
+       "      <td>47</td>\n",
+       "      <td>1</td>\n",
+       "      <td>43.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>2630.0</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>271</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>Female</td>\n",
+       "      <td>22</td>\n",
+       "      <td>1</td>\n",
+       "      <td>47.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>24502.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>115</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>Male</td>\n",
+       "      <td>51</td>\n",
+       "      <td>1</td>\n",
+       "      <td>19.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>34115.0</td>\n",
+       "      <td>124.0</td>\n",
+       "      <td>148</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7669861</th>\n",
+       "      <td>Male</td>\n",
+       "      <td>57</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>51661.0</td>\n",
+       "      <td>124.0</td>\n",
+       "      <td>109</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7669862</th>\n",
+       "      <td>Male</td>\n",
+       "      <td>28</td>\n",
+       "      <td>1</td>\n",
+       "      <td>50.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>25651.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>184</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7669863</th>\n",
+       "      <td>Male</td>\n",
+       "      <td>47</td>\n",
+       "      <td>1</td>\n",
+       "      <td>33.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1-2 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>2630.0</td>\n",
+       "      <td>138.0</td>\n",
+       "      <td>63</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7669864</th>\n",
+       "      <td>Male</td>\n",
+       "      <td>30</td>\n",
+       "      <td>1</td>\n",
+       "      <td>28.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>38866.0</td>\n",
+       "      <td>124.0</td>\n",
+       "      <td>119</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7669865</th>\n",
+       "      <td>Male</td>\n",
+       "      <td>23</td>\n",
+       "      <td>1</td>\n",
+       "      <td>46.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>&lt; 1 Year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>27498.0</td>\n",
+       "      <td>152.0</td>\n",
+       "      <td>79</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>7669866 rows × 10 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "         Gender  Age  Driving_License  Region_Code  Previously_Insured  \\\n",
+       "0        Female   20                1         47.0                   0   \n",
+       "1          Male   47                1         28.0                   0   \n",
+       "2          Male   47                1         43.0                   0   \n",
+       "3        Female   22                1         47.0                   1   \n",
+       "4          Male   51                1         19.0                   0   \n",
+       "...         ...  ...              ...          ...                 ...   \n",
+       "7669861    Male   57                1         28.0                   0   \n",
+       "7669862    Male   28                1         50.0                   1   \n",
+       "7669863    Male   47                1         33.0                   1   \n",
+       "7669864    Male   30                1         28.0                   0   \n",
+       "7669865    Male   23                1         46.0                   1   \n",
+       "\n",
+       "        Vehicle_Age Vehicle_Damage  Annual_Premium  Policy_Sales_Channel  \\\n",
+       "0          < 1 Year             No          2630.0                 160.0   \n",
+       "1          1-2 Year            Yes         37483.0                 124.0   \n",
+       "2          1-2 Year            Yes          2630.0                  26.0   \n",
+       "3          < 1 Year             No         24502.0                 152.0   \n",
+       "4          1-2 Year             No         34115.0                 124.0   \n",
+       "...             ...            ...             ...                   ...   \n",
+       "7669861    1-2 Year            Yes         51661.0                 124.0   \n",
+       "7669862    < 1 Year             No         25651.0                 152.0   \n",
+       "7669863    1-2 Year             No          2630.0                 138.0   \n",
+       "7669864    < 1 Year            Yes         38866.0                 124.0   \n",
+       "7669865    < 1 Year             No         27498.0                 152.0   \n",
+       "\n",
+       "         Vintage  \n",
+       "0            228  \n",
+       "1            123  \n",
+       "2            271  \n",
+       "3            115  \n",
+       "4            148  \n",
+       "...          ...  \n",
+       "7669861      109  \n",
+       "7669862      184  \n",
+       "7669863       63  \n",
+       "7669864      119  \n",
+       "7669865       79  \n",
+       "\n",
+       "[7669866 rows x 10 columns]"
+      ]
+     },
+     "execution_count": 35,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "tdf = tdf.drop(columns = ['id'])\n",
+    "tdf"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "id": "644dc286",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:21:40.474887Z",
+     "iopub.status.busy": "2024-07-12T09:21:40.473602Z",
+     "iopub.status.idle": "2024-07-12T09:21:49.211867Z",
+     "shell.execute_reply": "2024-07-12T09:21:49.210687Z"
+    },
+    "papermill": {
+     "duration": 8.756843,
+     "end_time": "2024-07-12T09:21:49.214458",
+     "exception": false,
+     "start_time": "2024-07-12T09:21:40.457615",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "tdf.replace(encoder_dict, inplace=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "id": "dc48b6ad",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:21:49.246276Z",
+     "iopub.status.busy": "2024-07-12T09:21:49.245916Z",
+     "iopub.status.idle": "2024-07-12T09:22:56.951845Z",
+     "shell.execute_reply": "2024-07-12T09:22:56.950875Z"
+    },
+    "papermill": {
+     "duration": 67.725242,
+     "end_time": "2024-07-12T09:22:56.954788",
+     "exception": false,
+     "start_time": "2024-07-12T09:21:49.229546",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "lr_tdf_pred = lr.predict(tdf).reshape(-1, 1)\n",
+    "DT_tdf_pred = DT.predict(tdf).reshape(-1, 1)\n",
+    "RF_tdf_pred = RF.predict(tdf).reshape(-1, 1)\n",
+    "voting_clf_soft_tdf_pred = voting_clf_soft.predict(tdf).reshape(-1, 1)\n",
+    "voting_clf_hard_tdf_pred = voting_clf_hard.predict(tdf).reshape(-1, 1)\n",
+    "\n",
+    "tdf_meta = np.hstack(\n",
+    "    (\n",
+    "        lr_tdf_pred, \n",
+    "        DT_tdf_pred, \n",
+    "        RF_tdf_pred,\n",
+    "        voting_clf_soft_tdf_pred,\n",
+    "        voting_clf_hard_tdf_pred\n",
+    "    )\n",
+    ")\n",
+    "\n",
+    "ada_tdf_predictions = ada.predict(tdf_meta)\n",
+    "gboost_tdf_predictions = gboost.predict(tdf_meta)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "39ac0253",
+   "metadata": {
+    "papermill": {
+     "duration": 0.014931,
+     "end_time": "2024-07-12T09:22:56.985156",
+     "exception": false,
+     "start_time": "2024-07-12T09:22:56.970225",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "<html>\n",
+    " <bpdy>\n",
+    "     <iframe width=\"768\" height=\"432\" src=\"https://miro.com/app/live-embed/uXjVKzJEy6Y=/?moveToViewport=-3075,-1247,7084,3392&embedId=839535778325\" frameborder=\"0\" scrolling=\"no\" allow=\"fullscreen; clipboard-read; clipboard-write\" allowfullscreen></iframe>\n",
+    "     \n",
+    " <body/>\n",
+    " <html/>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "id": "3a10baa0",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:22:57.015178Z",
+     "iopub.status.busy": "2024-07-12T09:22:57.014816Z",
+     "iopub.status.idle": "2024-07-12T09:22:57.019677Z",
+     "shell.execute_reply": "2024-07-12T09:22:57.018620Z"
+    },
+    "papermill": {
+     "duration": 0.022675,
+     "end_time": "2024-07-12T09:22:57.021923",
+     "exception": false,
+     "start_time": "2024-07-12T09:22:56.999248",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "best_pred = gboost_tdf_predictions"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "39dd7186",
+   "metadata": {
+    "papermill": {
+     "duration": 0.013904,
+     "end_time": "2024-07-12T09:22:57.050060",
+     "exception": false,
+     "start_time": "2024-07-12T09:22:57.036156",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# submission"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "id": "1ae8db77",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-12T09:22:57.080596Z",
+     "iopub.status.busy": "2024-07-12T09:22:57.080209Z",
+     "iopub.status.idle": "2024-07-12T09:23:05.520881Z",
+     "shell.execute_reply": "2024-07-12T09:23:05.519771Z"
+    },
+    "papermill": {
+     "duration": 8.458595,
+     "end_time": "2024-07-12T09:23:05.523314",
+     "exception": false,
+     "start_time": "2024-07-12T09:22:57.064719",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "subs = pd.read_csv('/kaggle/input/playground-series-s4e7/sample_submission.csv')\n",
+    "\n",
+    "if len(subs) == len(best_pred):\n",
+    "    subs['Response'] = best_pred\n",
+    "    subs.to_csv('submission.csv', index=False)\n",
+    "else:\n",
+    "    print(f\"Error: Length of predictions ({len(best_pred)}) does not match length of submission file ({len(subs)}).\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kaggle": {
+   "accelerator": "none",
+   "dataSources": [
+    {
+     "databundleVersionId": 8930475,
+     "sourceId": 73291,
+     "sourceType": "competition"
+    }
+   ],
+   "dockerImageVersionId": 30732,
+   "isGpuEnabled": false,
+   "isInternetEnabled": true,
+   "language": "python",
+   "sourceType": "notebook"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.13"
+  },
+  "papermill": {
+   "default_parameters": {},
+   "duration": 971.273509,
+   "end_time": "2024-07-12T09:23:08.259445",
+   "environment_variables": {},
+   "exception": null,
+   "input_path": "__notebook__.ipynb",
+   "output_path": "__notebook__.ipynb",
+   "parameters": {},
+   "start_time": "2024-07-12T09:06:56.985936",
+   "version": "2.5.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
